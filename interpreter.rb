@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'mechanize'
+require 'ruby-progressbar'
 
 require 'csv'
 require 'open-uri'
@@ -9,7 +10,9 @@ agent = Mechanize.new
 BASE_URL = "http://finance.yahoo.com/q/ao?s="
 EXTENDED_URL = "+Analyst+Opinion"
 
-DB_ARRAY = ["nasdaq", "nyse", "amex"]
+MARKETS = ["nasdaq", "nyse", "amex"]
+MARKETS_SIZES = [2700,3256,447]
+TOTAL_TO_PROCESS = MARKETS_SIZES.inject(:+)
 
 SYMBOL = 0
 NAME = 1
@@ -21,14 +24,21 @@ CSV_OPTIONS = {
   :headers => %w[S N Sec Ind MR(tw) MR(lw) MR(c) MeanTar MedTar HiTar LowTar NoB]
 }
 
-(0..2).each do |db_array_index|
 
-	result_file_name = DB_ARRAY[db_array_index] + "-results.csv"
-	file = "MARKETS/" + DB_ARRAY[db_array_index] + ".csv"
+MARKETS.each_with_index do |market, db_array_index|
+	
+	result_file_name = "#{market}-results.csv"
+	file = "MARKETS/#{market}.csv"
 
 	CSV.open(result_file_name, 'wb', CSV_OPTIONS) do |csv|
+			
+		total = MARKETS_SIZES[db_array_index]
+		prog_market = ProgressBar.create(:title => "#{market.upcase}", :format => '%t | %a |%b>>%i| %p%%', :total => total)
+		
 		CSV.foreach(file, :headers => true) do |row|
+			
 			url = BASE_URL + row[SYMBOL] + EXTENDED_URL
+
 			begin
 				page = agent.get(url)
 
@@ -53,6 +63,9 @@ CSV_OPTIONS = {
 			rescue OpenURI::HTTPError => e
 				csv << [url, e.message]
 			end
+
+			prog_market.increment
+			
 		end
 	end
 end
