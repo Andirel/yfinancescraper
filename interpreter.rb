@@ -7,6 +7,7 @@ require 'open-uri'
 
 agent = Mechanize.new
 
+
 BASE_URL = "http://finance.yahoo.com/q/ao?s="
 EXTENDED_URL = "+Analyst+Opinion"
 
