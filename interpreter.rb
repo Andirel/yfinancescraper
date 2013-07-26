@@ -8,10 +8,11 @@ require 'open-uri'
 agent = Mechanize.new
 
 
-BASE_URL = "http://finance.yahoo.com/q/ao?s="
+BASEAO_URL = "http://finance.yahoo.com/q/ao?s="
+BASESUM_URL = "http://finance.yahoo.com/q?s="
 EXTENDED_URL = "+Analyst+Opinion"
 
-MARKETS = ["nasdaq", "nyse", "amex"]
+MARKETS = ["nasdaqtest", "nysetest", "amextest"]
 MARKETS_SIZES = [2700,3256,447]
 TOTAL_TO_PROCESS = MARKETS_SIZES.inject(:+)
 
@@ -22,7 +23,7 @@ INDUSTRY = 3
 
 CSV_OPTIONS = {
   :write_headers => true,
-  :headers => %w[S N Sec Ind MR(tw) MR(lw) MR(c) MeanTar MedTar HiTar LowTar NoB]
+  :headers => %w[Ticker Name Sector Industry Price Beta MR(tw) MR(lw) MR(c) MeanTar MedTar HiTar LowTar NoB]
 }
 
 
@@ -38,7 +39,8 @@ MARKETS.each_with_index do |market, db_array_index|
 		
 		CSV.foreach(file, :headers => true) do |row|
 			
-			url = BASE_URL + row[SYMBOL] + EXTENDED_URL
+			url = BASEAO_URL + row[SYMBOL] + EXTENDED_URL
+			url2 = BASESUM_URL + row[SYMBOL]
 
 			begin
 				page = agent.get(url)
@@ -56,14 +58,21 @@ MARKETS.each_with_index do |market, db_array_index|
 					hi_tar = tar_table.search("td.yfnc_tabledata1")[2].text
 					low_tar = tar_table.search("td.yfnc_tabledata1")[3].text
 					nob = tar_table.search("td.yfnc_tabledata1")[4].text
+		
+					page = agent.get(url2)
+					trltime = page.parser.search("yfs_184 + row[SYMBOL]")
 
-					csv << [row[SYMBOL], row[NAME], row[SECTOR], row[INDUSTRY], mr_tw, mr_lw, mr_c, mean_tar, med_tar, hi_tar, low_tar, nob]
-				else
-					csv << [row[SYMBOL], row[NAME], row[SECTOR], row[INDUSTRY], "ERROR"]
+					if trltime != nil, 
+
+					trltime = page.parser.search("time_rtq_ticker")[0].text
+
+						csv << [row[SYMBOL], row[NAME], row[SECTOR], row[INDUSTRY], price, mr_tw, mr_lw, mr_c, mean_tar, med_tar, hi_tar, low_tar, nob]
+					else
+						csv << [row[SYMBOL], row[NAME], row[SECTOR], row[INDUSTRY], price, "NO DATA"]
+					end
+				rescue OpenURI::HTTPError => e
+					csv << [url, e.message]
 				end
-			rescue OpenURI::HTTPError => e
-				csv << [url, e.message]
-			end
 
 			prog_market.increment
 			
