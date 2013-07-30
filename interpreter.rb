@@ -13,7 +13,7 @@ BASESUM_URL = "http://finance.yahoo.com/q?s="
 EXTENDED_URL = "+Analyst+Opinion"
 
 MARKETS = ["nasdaq", "nyse", "amex"]
-MARKETS_SIZES = [2700,3256,447]
+MARKETS_SIZES = [2699,3201,438]
 TOTAL_TO_PROCESS = MARKETS_SIZES.inject(:+)
 
 SYMBOL = 0
