@@ -44,7 +44,7 @@ MARKETS.each_with_index do |market, db_array_index|
 			## OPENS ANALYST OPINION PAGE AND GETS MEAN RECOMMENDATIONS AND TARGET VALUES
 			begin
 				ao_page = agent.get(analyst_opinion_page)
-				if ao_page.parser.search("div#yfi_sym_results div.error h2").text[0..31] != "There are no All Markets results"
+				if ao_page.parser.search("div#yfi_sym_results div.error h2").text[0..31] != "There are no All Markets results" and ao_page.parser.search("div#yfi_sym_lookup_results h1").text != "Get Quotes Results for GDI"
 					mr_table = ao_page.parser.search("table#yfncsumtab table.yfnc_datamodoutline1")[0]
 					tar_table = ao_page.parser.search("table#yfncsumtab table.yfnc_datamodoutline1")[1]
 					
@@ -74,7 +74,7 @@ MARKETS.each_with_index do |market, db_array_index|
 			## OPENS STOCK SUMMARY PAGE TO GET PRICE
 			begin
 				sum_page = agent.get(stock_summary_page)
-				if sum_page.parser.search("div#yfi_sym_results div.error h2").text[0..31] != "There are no All Markets results"
+				if sum_page.parser.search("div#yfi_sym_results div.error h2").text[0..31] != "There are no All Markets results" and ao_page.parser.search("div#yfi_sym_lookup_results h1").text != "Get Quotes Results for GDI"
 					price_id = "yfs_184_" + row[SYMBOL]
 					price = sum_page.parser.search("div#yfi_rt_quote_summary div.yfi_rt_quote_summary_rt_top p span span")[0].text
 					# TO-DO: Add validation that it is BETA in the table
